@@ -1,280 +1,201 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RapSound</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapSound</title>
+    <style>
+        body { margin: 0; font-family: Arial; background: black; color: white; overflow-x: hidden; }
+        
+        #particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:black;
-  color:white;
-  overflow-x:hidden;
-}
+        /* INTERFACE NAVIGATION RESPONSIVE */
+        nav {
+            display: flex; justify-content: center; align-items: center; 
+            background: rgba(20,20,20,0.9);
+            padding: 15px; gap: 15px; box-shadow: 0 0 20px red;
+            position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
+            flex-wrap: wrap; /* Permet aux boutons de passer à la ligne sur mobile */
+        }
+        nav button {
+            background: transparent; border: 2px solid red; color: white;
+            padding: 10px 18px; border-radius: 20px; cursor: pointer; 
+            font-weight: bold; transition: 0.3s; font-size: 0.9rem;
+        }
+        nav button:hover { background: red; box-shadow: 0 0 15px red; }
 
-#particles{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  z-index:-1;
-  background:black;
-}
+        section { 
+            display: none; padding: 40px 15px; text-align: center; 
+            max-width: 900px; margin: auto; animation: fadeIn 0.6s; 
+        }
+        .active { display: block; }
 
-nav{
-  display:flex;
-  justify-content:center;
-  background:#111;
-  padding:15px;
-  gap:20px;
-  box-shadow:0 0 15px red;
-  flex-wrap:wrap;
-}
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-nav button{
-  background:transparent;
-  border:2px solid red;
-  color:white;
-  padding:12px 25px;
-  border-radius:25px;
-  cursor:pointer;
-  font-weight:bold;
-  font-size:1.1em;
-  transition:0.3s;
-}
+        /* IMAGE DE PROFIL ADAPTATIVE */
+        .profile-img {
+            width: 150px; height: 150px; /* Taille par défaut (Tablette/PC) */
+            object-fit: cover; border-radius: 50%; box-shadow: 0 0 20px red;
+            transition: 0.3s;
+        }
 
-nav button:hover{
-  background:red;
-  box-shadow:0 0 15px red;
-  transform:scale(1.05);
-}
+        /* COMPTEUR INTELLIGENT */
+        .counter-box { margin: 15px 0 30px 0; }
+        #followerCount {
+            /* S'adapte entre 4rem et 10rem selon la largeur de l'écran */
+            font-size: clamp(4rem, 15vw, 10rem); 
+            font-weight: 900; color: white;
+            opacity: 0.6; text-shadow: 0 0 20px red; display: block;
+        }
+        .sub-label { font-size: 1rem; letter-spacing: 5px; color: red; opacity: 0.5; text-transform: uppercase; }
 
-section{
-  display:none;
-  padding:50px;
-  text-align:center;
-  max-width:1200px;
-  margin:auto;
-  animation:fadeIn 0.6s ease;
-}
+        /* POSTS */
+        .media-item {
+            margin: 30px auto; padding: 20px; border-radius: 20px;
+            background: rgba(10, 10, 10, 0.7); border: 1px solid rgba(255,0,0,0.2);
+            backdrop-filter: blur(8px); width: 95%; box-sizing: border-box;
+        }
+        .media-item p { white-space: pre-wrap; text-align: left; line-height: 1.5; font-size: 1rem; }
+        iframe, img, video { width: 100%; aspect-ratio: 16/9; border-radius: 15px; border: none; }
 
-.active{display:block;}
+        /* FORMULAIRE EMAIL RESPONSIVE */
+        #emailForm { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
+        input, textarea {
+            width: 100%; max-width: 600px; padding: 15px; border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 0, 0, 0.3);
+            color: white; outline: none; transition: 0.3s; box-sizing: border-box;
+        }
 
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(20px);}
-  to{opacity:1; transform:translateY(0);}
-}
-
-.media-item{
-  margin:50px auto;
-  padding:20px;
-  border-radius:20px;
-  background:rgba(20,0,0,0.4);
-  backdrop-filter:blur(6px);
-  box-shadow:0 0 25px rgba(255,0,0,0.15);
-  transition:0.4s;
-  max-width:1000px;
-  border:2px solid rgba(255,0,0,0.3);
-}
-
-.media-item:hover{
-  box-shadow:0 0 50px rgba(255,0,0,0.7);
-  transform:translateY(-5px);
-}
-
-.media-item img,
-.media-item video,
-.media-item audio,
-.media-item iframe{
-  width:100%;
-  border-radius:15px;
-  border:2px solid rgba(255,0,0,0.5);
-}
-
-input[type="email"], textarea{
-  width:95%;
-  max-width:900px;
-  font-size:1.1em;
-  padding:18px;
-  margin:10px 0;
-  border-radius:30px;
-  border:none;
-  outline:none;
-  display:block;
-  box-sizing:border-box;
-}
-
-button{
-  font-size:1.1em;
-  padding:12px 25px;
-  border-radius:25px;
-  cursor:pointer;
-}
-</style>
+        /* --- MEDIA QUERIES (AJUSTEMENTS MOBILE) --- */
+        @media (max-width: 600px) {
+            section { padding: 20px 10px; }
+            .profile-img { width: 100px; height: 100px; } /* Image plus petite sur mobile */
+            h1 { font-size: 1.5rem; }
+            nav { padding: 10px; gap: 8px; }
+            nav button { padding: 8px 12px; font-size: 0.8rem; }
+        }
+    </style>
 </head>
 <body>
 
 <canvas id="particles"></canvas>
 
 <nav>
-<button onclick="showSection('rapsound')">RapSound</button>
-<button onclick="showSection('email')">E-mail</button>
-<button onclick="showSection('tendances')">Tendances</button>
+    <button onclick="showSection('rapsound')">RapSound</button>
+    <button onclick="showSection('email')">E-mail</button>
+    <button onclick="showSection('tendances')">Tendances</button>
 </nav>
 
-<!-- RAPSound -->
 <section id="rapsound" class="active">
-<h1>Site officiel de RapSound 😎</h1>
+    <h1>Site officiel de RapSound</h1>
+    
+    <a href="https://www.youtube.com/@RapSound-music" target="_blank">
+        <img src="https://yt3.googleusercontent.com/Uhsp5Mf-_im0rMu1DbN2jrV0lW3xPOOhDvJFtc_nlPfY3Ejvge9q1EaUi5jZb3Y5qAs68sFseA=s160-c-k-c0x00ffffff-no-rj" class="profile-img">
+    </a>
 
-<a href="https://www.youtube.com/@RapSound-music" target="_blank">
-<img src="https://yt3.googleusercontent.com/Uhsp5Mf-_im0rMu1DbN2jrV0lW3xPOOhDvJFtc_nlPfY3Ejvge9q1EaUi5jZb3Y5qAs68sFseA=s160-c-k-c0x00ffffff-no-rj" 
-style="border-radius:20px;box-shadow:0 0 25px red;transition:0.4s;"
-onmouseover="this.style.transform='scale(1.1)'"
-onmouseout="this.style.transform='scale(1)'">
-</a>
+    <div class="counter-box">
+        <span id="followerCount">0</span>
+        <span class="sub-label">Abonnés</span>
+    </div>
 
-<div id="rapsoundContainer"></div>
-
+    <div id="rapsoundContainer"></div>
 </section>
 
-<!-- EMAIL -->
 <section id="email">
-<h1>Contact</h1>
-<form id="emailForm">
-<input type="email" name="email" placeholder="Ton e-mail" required>
-<textarea name="message" placeholder="Ton message..." required rows="8"></textarea>
-<button type="submit" style="background:red;border:none;color:white;">Envoyer</button>
-</form>
+    <h1>CONTACT</h1>
+    <form id="emailForm">
+        <input type="email" id="userEmail" placeholder="Ton e-mail" required>
+        <textarea id="userMsg" placeholder="Parle-nous de ton projet..." rows="6" required></textarea>
+        <button type="submit" style="background:red; color:white; border:none; padding:12px 40px; border-radius:30px; cursor:pointer; font-weight:bold;">ENVOYER</button>
+    </form>
 </section>
 
-<!-- TENDANCES -->
 <section id="tendances">
-<h1>Tendances</h1>
-<div id="tendancesContainer"></div>
+    <h1>TENDANCES</h1>
+    <div id="tendancesContainer"></div>
 </section>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy, doc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-const firebaseConfig = {
-apiKey: "TA_CLE",
-authDomain: "rapsound-a36a1.firebaseapp.com",
-projectId: "rapsound-a36a1",
-storageBucket: "rapsound-a36a1.firebasestorage.app",
-messagingSenderId: "834539128779",
-appId: "1:834539128779:web:1f84187e067b81fa33184e"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyDdanXHxyG3uT8QtGy0czSOwVrCl_G7AgQ",
+        authDomain: "rapsound-a36a1.firebaseapp.com",
+        projectId: "rapsound-a36a1",
+        storageBucket: "rapsound-a36a1.firebasestorage.app",
+        messagingSenderId: "834539128779",
+        appId: "1:834539128779:web:1f84187e067b81fa33184e"
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-window.showSection = function(id){
-  document.querySelectorAll("section").forEach(sec=>sec.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-
-// Fonction pour charger les posts depuis Firebase, relié au code Studio
-function loadPosts(sectionName, containerId){
-  const container = document.getElementById(containerId);
-  const q = query(collection(db,sectionName), orderBy("date","desc"));
-
-  onSnapshot(q,(snapshot)=>{
-    container.innerHTML="";
-    snapshot.forEach(docSnap=>{
-      const data = docSnap.data();
-      const div = document.createElement("div");
-      div.className="media-item";
-
-      let mediaHTML="";
-      if(data.type==="image") mediaHTML = `<img src="${data.url}">`;
-      else if(data.type==="video") mediaHTML = `<video controls src="${data.url}"></video>`;
-      else if(data.type==="audio") mediaHTML = `<audio controls src="${data.url}"></audio>`;
-      else if(data.type==="youtube") mediaHTML = `<iframe width="100%" height="400" src="${data.url}" frameborder="0" allowfullscreen></iframe>`;
-
-      div.innerHTML=`${mediaHTML}<p>${data.text}</p>`;
-      container.appendChild(div);
+    onSnapshot(doc(db, "stats", "followers"), (s) => {
+        if(s.exists()) document.getElementById("followerCount").innerText = s.data().count;
     });
-  });
-}
 
-// Charger les deux sections
-loadPosts("rapsound","rapsoundContainer");
-loadPosts("tendances","tendancesContainer");
+    window.showSection = (id) => {
+        document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+    };
 
-// EMAIL FORM avec mailto
-document.getElementById("emailForm").addEventListener("submit", function(e){
-  e.preventDefault();
-  const emailField = this.email.value.trim();
-  const messageField = this.message.value.trim();
-  const mailtoLink = `mailto:rapsound-music_contact@tutamail.com?subject=RapSound+Contact&body=De:+${encodeURIComponent(emailField)}%0A%0A${encodeURIComponent(messageField)}`;
-  window.location.href = mailtoLink;
-  this.reset();
-});
+    function load(col, id) {
+        onSnapshot(query(collection(db, col), orderBy("date", "desc")), (snap) => {
+            const container = document.getElementById(id);
+            container.innerHTML = "";
+            snap.forEach(d => {
+                const data = d.data();
+                const div = document.createElement("div");
+                div.className = "media-item";
+                let m = "";
+                if(data.type === "youtube") m = `<iframe src="${data.url}" allowfullscreen></iframe>`;
+                else if(data.type === "image") m = `<img src="${data.url}">`;
+                else if(data.type === "video") m = `<video src="${data.url}" controls></video>`;
+                div.innerHTML = `${m}<p>${data.text || ""}</p>`;
+                container.appendChild(div);
+            });
+        });
+    }
+    load("rapsound", "rapsoundContainer");
+    load("tendances", "tendancesContainer");
+
+    document.getElementById("emailForm").onsubmit = (e) => {
+        e.preventDefault();
+        const body = encodeURIComponent(document.getElementById("userMsg").value);
+        window.location.href = `mailto:rapsound-music_contact@tutamail.com?body=${body}`;
+    };
 </script>
 
 <script>
-const canvas=document.getElementById("particles");
-const ctx=canvas.getContext("2d");
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
+    const canvas = document.getElementById("particles"), ctx = canvas.getContext("2d");
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize);
+    resize();
 
-let particles=[];
-const number=60;
-
-class Particle{
-  constructor(){
-    this.x=Math.random()*canvas.width;
-    this.y=Math.random()*canvas.height;
-    this.size=Math.random()*14+10;
-    this.speedX=(Math.random()-0.5)*0.08;
-    this.speedY=(Math.random()-0.5)*0.08;
-  }
-  update(){
-    this.x+=this.speedX;
-    this.y+=this.speedY;
-    if(this.x<0||this.x>canvas.width) this.speedX*=-1;
-    if(this.y<0||this.y>canvas.height) this.speedY*=-1;
-  }
-  draw(){
-    ctx.fillStyle="rgba(255,0,0,0.12)";
-    ctx.shadowColor="red";
-    ctx.shadowBlur=60;
-    ctx.beginPath();
-    ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
-    ctx.fill();
-    ctx.shadowBlur=0;
-  }
-}
-
-function init(){
-  particles=[];
-  for(let i=0;i<number;i++){
-    particles.push(new Particle());
-  }
-}
-
-function animate(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  particles.forEach(p=>{
-    p.update();
-    p.draw();
-  });
-  requestAnimationFrame(animate);
-}
-
-window.addEventListener("resize",()=>{
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
-  init();
-});
-
-init();
-animate();
+    let particles = [];
+    class P {
+        constructor() {
+            this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height;
+            this.s = Math.random() * 12 + 8; this.vX = (Math.random() - 0.5) * 2; this.vY = (Math.random() - 0.5) * 2;
+        }
+        update() {
+            this.x += this.vX; this.y += this.vY;
+            if (this.x < 0 || this.x > canvas.width) this.vX *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.vY *= -1;
+        }
+        draw() {
+            ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; ctx.beginPath();
+            ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+    for (let i = 0; i < 50; i++) particles.push(new P());
+    function anim() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(anim);
+    }
+    anim();
 </script>
-
 </body>
 </html>

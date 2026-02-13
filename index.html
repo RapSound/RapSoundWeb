@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RapSound</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:black;
+  color:white;
+  overflow-x:hidden;
+}
+
+#particles{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index:-1;
+  background:black;
+}
+
+nav{
+  display:flex;
+  justify-content:center;
+  background:#111;
+  padding:15px;
+  gap:20px;
+  box-shadow:0 0 15px red;
+  flex-wrap:wrap;
+}
+
+nav button{
+  background:transparent;
+  border:2px solid red;
+  color:white;
+  padding:12px 25px;
+  border-radius:25px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:1.1em;
+  transition:0.3s;
+}
+
+nav button:hover{
+  background:red;
+  box-shadow:0 0 15px red;
+  transform:scale(1.05);
+}
+
+section{
+  display:none;
+  padding:50px;
+  text-align:center;
+  max-width:1200px;
+  margin:auto;
+  animation:fadeIn 0.6s ease;
+}
+
+.active{display:block;}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(20px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.media-item{
+  margin:50px auto;
+  padding:20px;
+  border-radius:20px;
+  background:rgba(20,0,0,0.4);
+  backdrop-filter:blur(6px);
+  box-shadow:0 0 25px rgba(255,0,0,0.15);
+  transition:0.4s;
+  max-width:1000px;
+  border:2px solid rgba(255,0,0,0.3);
+}
+
+.media-item:hover{
+  box-shadow:0 0 50px rgba(255,0,0,0.7);
+  transform:translateY(-5px);
+}
+
+.media-item img,
+.media-item video,
+.media-item audio,
+.media-item iframe{
+  width:100%;
+  border-radius:15px;
+  border:2px solid rgba(255,0,0,0.5);
+}
+
+input[type="email"], textarea{
+  width:95%;
+  max-width:900px;
+  font-size:1.1em;
+  padding:18px;
+  margin:10px 0;
+  border-radius:30px;
+  border:none;
+  outline:none;
+  display:block;
+  box-sizing:border-box;
+}
+
+button{
+  font-size:1.1em;
+  padding:12px 25px;
+  border-radius:25px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<nav>
+<button onclick="showSection('rapsound')">RapSound</button>
+<button onclick="showSection('email')">E-mail</button>
+<button onclick="showSection('tendances')">Tendances</button>
+</nav>
+
+<!-- RAPSound -->
+<section id="rapsound" class="active">
+<h1>Site officiel de RapSound 😎</h1>
+
+<a href="https://www.youtube.com/@RapSound-music" target="_blank">
+<img src="https://yt3.googleusercontent.com/Uhsp5Mf-_im0rMu1DbN2jrV0lW3xPOOhDvJFtc_nlPfY3Ejvge9q1EaUi5jZb3Y5qAs68sFseA=s160-c-k-c0x00ffffff-no-rj" 
+style="border-radius:20px;box-shadow:0 0 25px red;transition:0.4s;"
+onmouseover="this.style.transform='scale(1.1)'"
+onmouseout="this.style.transform='scale(1)'">
+</a>
+
+<div id="rapsoundContainer"></div>
+
+</section>
+
+<!-- EMAIL -->
+<section id="email">
+<h1>Contact</h1>
+<form id="emailForm">
+<input type="email" name="email" placeholder="Ton e-mail" required>
+<textarea name="message" placeholder="Ton message..." required rows="8"></textarea>
+<button type="submit" style="background:red;border:none;color:white;">Envoyer</button>
+</form>
+</section>
+
+<!-- TENDANCES -->
+<section id="tendances">
+<h1>Tendances</h1>
+<div id="tendancesContainer"></div>
+</section>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "TA_CLE",
+authDomain: "rapsound-a36a1.firebaseapp.com",
+projectId: "rapsound-a36a1",
+storageBucket: "rapsound-a36a1.firebasestorage.app",
+messagingSenderId: "834539128779",
+appId: "1:834539128779:web:1f84187e067b81fa33184e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.showSection = function(id){
+  document.querySelectorAll("section").forEach(sec=>sec.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// Fonction pour charger les posts depuis Firebase, relié au code Studio
+function loadPosts(sectionName, containerId){
+  const container = document.getElementById(containerId);
+  const q = query(collection(db,sectionName), orderBy("date","desc"));
+
+  onSnapshot(q,(snapshot)=>{
+    container.innerHTML="";
+    snapshot.forEach(docSnap=>{
+      const data = docSnap.data();
+      const div = document.createElement("div");
+      div.className="media-item";
+
+      let mediaHTML="";
+      if(data.type==="image") mediaHTML = `<img src="${data.url}">`;
+      else if(data.type==="video") mediaHTML = `<video controls src="${data.url}"></video>`;
+      else if(data.type==="audio") mediaHTML = `<audio controls src="${data.url}"></audio>`;
+      else if(data.type==="youtube") mediaHTML = `<iframe width="100%" height="400" src="${data.url}" frameborder="0" allowfullscreen></iframe>`;
+
+      div.innerHTML=`${mediaHTML}<p>${data.text}</p>`;
+      container.appendChild(div);
+    });
+  });
+}
+
+// Charger les deux sections
+loadPosts("rapsound","rapsoundContainer");
+loadPosts("tendances","tendancesContainer");
+
+// EMAIL FORM avec mailto
+document.getElementById("emailForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const emailField = this.email.value.trim();
+  const messageField = this.message.value.trim();
+  const mailtoLink = `mailto:rapsound-music_contact@tutamail.com?subject=RapSound+Contact&body=De:+${encodeURIComponent(emailField)}%0A%0A${encodeURIComponent(messageField)}`;
+  window.location.href = mailtoLink;
+  this.reset();
+});
+</script>
+
+<script>
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+const number=60;
+
+class Particle{
+  constructor(){
+    this.x=Math.random()*canvas.width;
+    this.y=Math.random()*canvas.height;
+    this.size=Math.random()*14+10;
+    this.speedX=(Math.random()-0.5)*0.08;
+    this.speedY=(Math.random()-0.5)*0.08;
+  }
+  update(){
+    this.x+=this.speedX;
+    this.y+=this.speedY;
+    if(this.x<0||this.x>canvas.width) this.speedX*=-1;
+    if(this.y<0||this.y>canvas.height) this.speedY*=-1;
+  }
+  draw(){
+    ctx.fillStyle="rgba(255,0,0,0.12)";
+    ctx.shadowColor="red";
+    ctx.shadowBlur=60;
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+  }
+}
+
+function init(){
+  particles=[];
+  for(let i=0;i<number;i++){
+    particles.push(new Particle());
+  }
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.update();
+    p.draw();
+  });
+  requestAnimationFrame(animate);
+}
+
+window.addEventListener("resize",()=>{
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  init();
+});
+
+init();
+animate();
+</script>
+
+</body>
+</html>
